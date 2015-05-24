@@ -12,8 +12,7 @@ unsigned char unsbox[256];
 
 int idxs[0x1000000];
 
-int test_hack() {
-
+int decrypt_init() {
     for (int i = 0; i < 256; ++i) {
         unsbox[sbox[i]] = i;        
     }
@@ -27,12 +26,46 @@ int test_hack() {
         }
         lastb[xx] = x;        
     }
-    
-    char key[7] = "0sHjzk";
-    char plain1[17] = "djqpiNkKJhuK,JKJ";
-    char crypt1[16];
+ 
+}
 
-    midcrypt((unsigned char*) key, (unsigned char*) plain1, (unsigned char*) crypt1);
+void decrypt_midcrypt(unsigned char key[6], unsigned char in_[16], unsigned char out[16]) {
+    decrypt_init();
+    
+    for (int i = 0; i < 16; ++i) {
+        out[i] = in_[i];
+    }
+    
+    for (int k = 5; k >= 0; --k) {
+        unsigned char x = lastb[key[k]];
+        for (int r = 0; r < 100; ++r) {                
+            int last = out[15];
+            for (int i = 15; i > 0; --i) {
+                out[i] = (out[i] >> 3) ^ (out[i - 1] << 5);
+            }
+            out[0] = (out[0] >> 3) ^ (last << 5);
+            
+            for (int i = 15; i >= 0; --i) {
+                out[i] = unsbox[out[i]];                       
+                out[i] ^= x;                    
+                x = (x - 1) * 205;                    
+            }
+            
+        }
+    }
+
+}
+
+int test_hack() {
+
+    decrypt_init();
+    
+    //    char key[7] = "0sHjzk";
+    char plain1[17] = "1234567890123456";
+    unsigned char crypt1[16] = {0xb5, 0xf0, 0xe2, 0xee, 0x6, 0x66, 0x30, 0xc3, 0xa9, 0x3, 0xa5, 0x6a,
+                                0x81, 0xbb, 0xb7, 0x5f};
+
+    //    midcrypt((unsigned char*) key, (unsigned char*) plain1, (unsigned char*) crypt1);
 
     unsigned char tk[3];
     unsigned char out[16];
@@ -149,6 +182,16 @@ int test_crypt() {
     printf("\n");
 }
 
+int test_decrypt() {
+    unsigned char key[6] = {0x8d, 0x0f, 0x2b, 0x0b, 0xd8, 0x7d};
+    unsigned char in[17] = {0xd8, 0xf6, 0x1c, 0x56, 0x8b, 0x70, 0xba, 0xca, 0x8, 0xad, 0xf7, 0x8f,
+                                0xcf, 0xb1, 0x75, 0x2};
+    unsigned char out[17];
+    decrypt_midcrypt(key, in, out);
+    out[16] = 0;
+    printf("%s\n", out);
+        
+}
 int main() {
-    test_hack();
+    test_decrypt();
 }
