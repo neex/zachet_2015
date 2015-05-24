@@ -1,0 +1,22 @@
+<!doctype html>
+<title>My Application</title>
+{% if not noreport_login and user %}
+   Logged in as {{ user.username }} <br>
+{% endif %}
+
+{% if request.args.get("blue_message") %}
+ Notification: {{ request.args.get("blue_message") }} <br>
+{% endif %}
+{% if request.args.get("red_message") %}
+ Error: {{ request.args.get("red_message") }} <br>
+{% endif %}
+
+<ul>
+<li> <a href="{{url_for('index') }}"> Index </a>
+<li> <a href="{{url_for('register') }}"> Register </a>
+<li> <a href="{{url_for('login') }}"> Login </a>
+<li> <a href="{{url_for('password_recovery') }}"> Forgot password? </a>
+
+</ul>
+{% block body %}{% endblock %}
+

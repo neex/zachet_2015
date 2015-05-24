@@ -1,34 +1,125 @@
-from flask import Flask
-from flask.ext.sqlalchemy import SQLAlchemy
-import string, random
+from flask import Flask, request, render_template, make_response, redirect, url_for
 
-import one_way_crypt
+from models import *
+from login_management import *
+from forms import *
 
 app = Flask(__name__)
+app.debug = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
-db = SQLAlchemy(app)
+db.init_app(app)
+
+@app.route('/')
+def index():
+    user = get_user_if_not_pseudo()
+    return render_template("index.html", user = user)
 
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True)
-    password = db.Column(db.String(80))
-    recovery_question = db.Column(db.String(80))
-    recovery_answer = db.Column(db.String(80))
-    big_fat_csrf_token = db.Column(db.String(50))
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    user = get_user_if_not_pseudo()    
+    form = RegistrationForm(request.form)
+    if request.method == 'POST' and form.validate():
+        user = User(form.username.data, form.password.data, form.recovery_question.data, form.recovery_answer.data, form.secret.data)
+        db.session.add(user)
+        db.session.commit()
+        return redirect(url_for('login') + '?blue_message=Thank+you+for+registring')
+    return render_template('register.html', form = form, user = user)
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    user = get_user_if_not_pseudo()    
+    form = LoginForm(request.form)
+    if request.method == 'POST' and form.validate():
+        sess = Session(form.user.username)
+        db.session.add(sess)
+        db.session.commit()
+        resp = make_response(redirect(url_for('profile') + '?blue_message=Now+you+logged+in'))
+        resp.set_cookie('sess_id', sess.cookie_session_id)
+        return resp
+    return render_template('login.html', user = user, form = form)
+
+    
+@app.route('/profile')
+@req_login
+def profile(user):
+    return render_template('profile.html', user = user)
+
+@app.route('/gen_new_e')
+@req_login
+@check_csrf_token(True)
+def gen_new_e(user):
+    user.new_e()
+    db.session.commit()
+    return redirect(url_for('profile') + '?blue_message=RSA+E+changed')
+
+
+@app.route('/gen_new_n')
+@req_login
+@check_csrf_token(True)
+def gen_new_n(user):
+    user.new_n()
+    db.session.commit()
+    return redirect(url_for('profile') + '?blue_message=RSA+N+changed')
+    
+@app.route('/send')
+@req_login
+@check_csrf_token(False)
+def send_message(user):
+    form = SendForm(request.args)
+    if request.args.get('submit') and form.validate():
+        mess = Message(user.username, form.user_to.data, form.encrypt.data, form.text.data)
+        db.session.add(mess)
+        db.session.commit()
+        return redirect(url_for('send_message') + '?blue_message=Message+sent')
+    return render_template('send_message.html', user = user, form = form)
+
+@app.route('/send_secret')
+@req_login
+@check_csrf_token(False)
+def send_secret(user):
+    form = SendSecretForm(request.args)
+    if request.args.get('submit') and form.validate():
+        mess = Message(user.username, form.user_to.data, True, user.secret)
+        db.session.add(mess)
+        db.session.commit()
+        return redirect(url_for('send_secret_message') + '?blue_message=Message+sent')
+    return render_template('send_secret_message.html', user = user, form = form)
+
+
+@app.route('/inbox')
+@req_login
+def inbox(user):
+    pass
+
+
+@app.route('/password_recovery', methods = ['GET', 'POST'])
+def password_recovery():
+    user = get_user_if_not_pseudo()    
+    form = PasswordRecoveryForm(request.form)
+    if request.method == 'POST' and form.validate():
+        sess = Session(form.username.data, True)
+        db.session.add(sess)
+        db.session.commit()
+        resp = make_response(redirect(url_for('password_recovery_question')))
+        resp.set_cookie('sess_id', sess.cookie_session_id)
+        return resp
+    return render_template('password_recovery.html', user = user, form = form)
     
 
-    def __init__(self, username, password, recovery_question, recovery_answer):
-        self.username = username
-        self.password = password
-        self.recovery_question = recovery_question
-        self.recovery_answer = recovery_answer
-        self.big_fat_csrf_token = ''.join([random.choice(string.ascii_letters) for i in xrange(48)])
-
-    def __repr__(self):
-        return '<User {}>'.format(self.__dict__)
-
-
-class Session(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    cookie_session_id = db.Column(db.String(50), unique=True)
+@app.route('/password_recovery_question', methods = ['GET', 'POST'])
+@req_pseudo_login
+@check_csrf_token(False)
+def password_recovery_question(user):
+    form = PasswordRecoveryAnswerForm(request.form)
+    if request.method == 'POST' and form.validate():
+        sess = get_session()
+        sess.pseudo_session = False
+        db.session.commit()
+        resp = make_response(redirect(url_for('profile') + '?blue_message=Answer+is+correct'))
+        return resp
+    return render_template('password_recovery_question.html', user = user, noreport_login = True, form = form)
+    
+if __name__ == "__main__":
+    app.run()

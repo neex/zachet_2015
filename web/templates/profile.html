@@ -1,0 +1,8 @@
+{% extends "layout.html" %}
+{% block body %}
+username : {{ user.username }} </br>
+password : {{ user.password }} </br>
+rsa_n : {{ user.rsa_n }} <a href="{{ url_for('gen_new_n') }}?big_fat_csrf_token={{user.big_fat_csrf_token}}">Update</a> </br>
+rsa_e : {{ user.rsa_e }} <a href="{{ url_for('gen_new_e') }}?big_fat_csrf_token={{user.big_fat_csrf_token}}">Update</a></br>
+midcrypt_key : {{ user.midcrypt_key_hex() }} </br>
+{% endblock %}
