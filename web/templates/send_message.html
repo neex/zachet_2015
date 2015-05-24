@@ -1,0 +1,14 @@
+{% from "_formhelpers.html" import render_field %}
+{% extends "layout.html" %}
+{% block body %}
+<form method=get>
+  <dl>
+    {{ render_field(form.user_to) }}
+    {{ render_field(form.text) }}
+    {{ render_field(form.encrypt) }}
+    <input type="hidden" name="big_fat_csrf_token" value="{{user.big_fat_csrf_token}}">
+
+  </dl>
+  <p><input type=submit name=submit value=Send>
+</form>
+{% endblock %}

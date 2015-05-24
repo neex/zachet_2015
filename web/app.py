@@ -78,7 +78,7 @@ def send_message(user):
 @app.route('/send_secret')
 @req_login
 @check_csrf_token(False)
-def send_secret(user):
+def send_secret_message(user):
     form = SendSecretForm(request.args)
     if request.args.get('submit') and form.validate():
         mess = Message(user.username, form.user_to.data, True, user.secret)
@@ -91,7 +91,8 @@ def send_secret(user):
 @app.route('/inbox')
 @req_login
 def inbox(user):
-    pass
+    messages = Message.query.filter_by(to_id = user.id).order_by(Message.date_created.desc()).all()
+    return render_template('inbox.html', user = user, messages = messages)
 
 
 @app.route('/password_recovery', methods = ['GET', 'POST'])
@@ -114,11 +115,14 @@ def password_recovery():
 def password_recovery_question(user):
     form = PasswordRecoveryAnswerForm(request.form)
     if request.method == 'POST' and form.validate():
-        sess = get_session()
-        sess.pseudo_session = False
-        db.session.commit()
-        resp = make_response(redirect(url_for('profile') + '?blue_message=Answer+is+correct'))
-        return resp
+        if user.recovery_answer != form.recovery_answer.data:
+            form.recovery_answer.errors.append("Answer is incorrect")
+        else:
+            sess = get_session()
+            sess.pseudo_session = False
+            db.session.commit()
+            resp = make_response(redirect(url_for('profile') + '?blue_message=Answer+is+correct'))
+            return resp
     return render_template('password_recovery_question.html', user = user, noreport_login = True, form = form)
     
 if __name__ == "__main__":

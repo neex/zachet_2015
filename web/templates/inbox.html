@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block body %}
+{% if not messages %}
+Inbox is empty
+{% else %}
+<ul>
+ {% for message in messages %}
+<li>From: {{ message.user_from.username }} <br>
+    Date: {{ message.date_created }} <br>
+    Text: {{ message.text }} 
+ {% endfor %}
+<ul>
+{% endif %}
+{% endblock %}

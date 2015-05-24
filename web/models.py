@@ -65,6 +65,7 @@ class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     from_id =  db.Column(db.Integer, db.ForeignKey('user.id'), index = True)
     to_id =  db.Column(db.Integer, db.ForeignKey('user.id'), index = True)
+    user_from = db.relationship("User", foreign_keys=[from_id])
     text = db.Column(db.LargeBinary)
     crypted = db.Column(db.Boolean)
     date_created = db.Column(db.DateTime)
@@ -75,12 +76,12 @@ class Message(db.Model):
         self.from_id = user_from.id
         self.to_id = user_to.id
         self.crypted = crypted
-        self.datetime = datetime.datetime.now()        
+        self.date_created = datetime.datetime.now()        
         if not self.crypted:
             self.text = text
         else:
             cr = user_from.get_cryptor()
-            text = text.rjust(16)[:16]
+            text = bytes(text.rjust(16)[:16])
             self.text = cr.do_encrypt(text)
             
     def __repr__(self):
