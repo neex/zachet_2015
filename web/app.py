@@ -1,20 +1,28 @@
 from flask import Flask, request, render_template, make_response, redirect, url_for
 
+import json
+
 from models import *
 from login_management import *
 from forms import *
 
 app = Flask(__name__)
 app.debug = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://prak:2014prakvmk2014@localhost/prak4?charset=utf8&use_unicode=0'
 db.init_app(app)
 
 @app.route('/')
 def index():
-#    db.create_all()
-#    db.session.commit()
     user = get_user_if_not_pseudo()
     return render_template("index.html", user = user)
+
+if app.debug:
+    @app.route('/recreate_db')
+    def recreate_db():
+        db.drop_all()
+        db.create_all()
+        db.session.commit()
+        return "no"
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -99,6 +107,21 @@ def send_secret_message(user):
 def inbox(user):
     messages = Message.query.filter_by(to_id = user.id).order_by(Message.date_created.desc()).all()
     return render_template('inbox.html', user = user, messages = messages)
+
+@app.route('/inbox_json')
+@req_login
+def inbox_json(user):
+    last_id = int(request.args['last_id'])
+    messages = Message.query.filter_by(to_id = user.id).filter(Message.id > last_id).all()
+    messages_json = []
+    for m in messages:
+        d = {}
+        for x in m.__dict__:
+            if x and x[0] != '_':
+                if type(getattr(m, x)) in [int, str, unicode, long, bool]:
+                    d[x] = getattr(m, x)
+        messages_json.append(d)
+    return json.dumps(messages_json)
 
 
 @app.route('/password_recovery', methods = ['GET', 'POST'])
