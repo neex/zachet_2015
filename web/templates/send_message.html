@@ -3,7 +3,7 @@
 {% block body %}
 <form method=get class=form-horizontal>
     {{ render_field(form.user_to) }}
-    {{ render_field(form.text) }}
+    {{ render_field(form.text, size=100) }}
     {{ render_field(form.encrypt) }}
     {{ render_submit('Send') }}
     <input type="hidden" name="big_fat_csrf_token" value="{{user.big_fat_csrf_token}}">
