@@ -11,6 +11,8 @@ db.init_app(app)
 
 @app.route('/')
 def index():
+#    db.create_all()
+#    db.session.commit()
     user = get_user_if_not_pseudo()
     return render_template("index.html", user = user)
 
@@ -68,6 +70,8 @@ def gen_new_n(user):
 @check_csrf_token(False)
 def send_message(user):
     form = SendForm(request.args)
+    form.user_to.choices = [(u.username, ) * 2 for u in User.query.order_by(User.id).all()]
+
     if request.args.get('submit') and form.validate():
         mess = Message(user.username, form.user_to.data, form.encrypt.data, form.text.data)
         db.session.add(mess)
@@ -80,8 +84,10 @@ def send_message(user):
 @check_csrf_token(False)
 def send_secret_message(user):
     form = SendSecretForm(request.args)
+    form.user_to.choices = [(u.username, ) * 2 for u in User.query.order_by(User.id).all()]
     if request.args.get('submit') and form.validate():
         mess = Message(user.username, form.user_to.data, True, user.secret)
+        mess.type_ = "Crypted supersecret"
         db.session.add(mess)
         db.session.commit()
         return redirect(url_for('send_secret_message') + '?blue_message=Message+sent')

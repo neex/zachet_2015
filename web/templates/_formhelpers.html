@@ -3,13 +3,14 @@
     {{ field.label(class = "col-sm-2 control-label") }}
     <div class="col-sm-10">
       {{ field(**kwargs)|safe }}
-    </div>
   {% if field.errors %}
     {% for error in field.errors %}
-      {{ error }}<br>
+
+        <span class="help-inline">{{ error }}</span>     
     {% endfor %}
     
   {% endif %}
+    </div>
 
   </div>
 

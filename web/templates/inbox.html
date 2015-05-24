@@ -3,12 +3,50 @@
 {% if not messages %}
 Inbox is empty
 {% else %}
-<ul>
+                <div class=" col-md-9 col-lg-9 "> 
+                  <table class="table table-user-information">
+                    <tbody>
+
  {% for message in messages %}
-<li>From: {{ message.user_from.username }} <br>
-    Date: {{ message.date_created }} <br>
-    Text: {{ message.text }} 
+                      <tr>
+                        <td>From</td>
+                        <td>{{ message.user_from.username }}</td>
+                      </tr>
+                      <tr>
+
+                      <tr>
+                        <td>To</td>
+                        <td>{{ message.user_to.username }}</td>
+                      </tr>
+                      <tr>
+
+                      <tr>
+                        <td>Type</td>
+                        <td>{{ message.type_ }}</td>
+                      </tr>
+
+
+                      <tr>
+                        <td>Sent</td>
+                        <td>{{ message.date_created }}</td>
+                      </tr>
+
+                      <tr>
+
+
+
+                      <tr>
+                        <td>Message</td>
+                        <td><pre>{{message.text}}</pre></td>
+                      </tr>
+<tr><td></td><td><hr></td></tr>
  {% endfor %}
-<ul>
+                     
+
+                    </tbody>
+                  </table>
+                  
+                </div>
+
 {% endif %}
 {% endblock %}

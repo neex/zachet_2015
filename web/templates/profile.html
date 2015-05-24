@@ -1,17 +1,36 @@
 {% extends "layout.html" %}
 {% block body %}
-<form onsubmit='return false;' class='form-horizontal'>
-  <div class="form-group">
-    <strong class="col-sm-2 control-label">Username</strong>
-    <div class="col-sm-10">
-      {{ user.username }}
-    </div>
-  </div>
-</form>
-username : {{ user.username }} </br>
-password : {{ user.password }} </br>
-rsa_n : {{ user.rsa_n }} <a href="{{ url_for('gen_new_n') }}?big_fat_csrf_token={{user.big_fat_csrf_token}}">Update</a> </br>
-rsa_e : {{ user.rsa_e }} <a href="{{ url_for('gen_new_e') }}?big_fat_csrf_token={{user.big_fat_csrf_token}}">Update</a></br>
-midcrypt_key : {{ user.midcrypt_key_hex() }} </br>
-</form>
+                <div class=" col-md-9 col-lg-9 "> 
+                  <table class="table table-user-information">
+                    <tbody>
+                      <tr>
+                        <td>Username</td>
+                        <td>{{ user.username }}</td>
+                      </tr>
+                      <tr>
+                        <td>Password</td>
+                        <td><span class="pass_toggle" style="display: none">{{ user.password }}</span><a href="#" class="pass_toggle" onclick="$('.pass_toggle').toggle()">Show</a></td>
+                      </tr>
+                      <tr>
+                        <td>Key&nbsp;for&nbsp;<a href="http://pastebin.com/embed_iframe.php?i=6vWKMMej">midcrypt</a>&nbsp;(hex)</td>
+                        <td>{{ user.midcrypt_key_hex() }}</td>
+                      </tr>
+
+
+                      <tr>
+                        <td>RSA N</td>
+                        <td><pre>{{user.rsa_n}}</pre></td>
+                        <td><a class="btn btn-primary" href="{{ url_for('gen_new_n') }}?big_fat_csrf_token={{user.big_fat_csrf_token}}">Regenerate</a></td>
+                      </tr>
+                      <tr>
+                        <td>RSA E</td>
+                        <td><pre>{{user.rsa_e}}</pre></td>
+                        <td><a class="btn btn-primary" href="{{ url_for('gen_new_e') }}?big_fat_csrf_token={{user.big_fat_csrf_token}}">Regenerate</a></td>
+                      </tr>
+                     
+                    </tbody>
+                  </table>
+                  
+                </div>
+
 {% endblock %}

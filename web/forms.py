@@ -1,4 +1,4 @@
-from wtforms import Form, TextField, PasswordField, BooleanField, validators, ValidationError
+from wtforms import SelectField, Form, TextField, PasswordField, BooleanField, validators, ValidationError
 from models import *
 
 class RegistrationForm(Form):
@@ -36,7 +36,9 @@ class LoginForm(Form):
 
 
 class SendForm(Form):
-    user_to = TextField('To', [validators.Length(min=1, max=25)])
+#    user_to = TextField('To', [validators.Length(min=1, max=25)])
+    user_to = SelectField('To', [validators.Length(min=1, max=25)])
+
     text = TextField('Text', [validators.Length(min=1)])
     encrypt = BooleanField('Encrypt the message? ')
 
@@ -57,7 +59,7 @@ class SendForm(Form):
         
     
 class SendSecretForm(Form):
-    user_to = TextField('To', [validators.Length(min=1, max=25)])
+    user_to = SelectField('To', [validators.Length(min=1, max=25)])
 
     def validate(self):
         rv = Form.validate(self)
