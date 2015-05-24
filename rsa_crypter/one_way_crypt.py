@@ -38,7 +38,6 @@ class Cryptor(object):
 
         crypted_text = midcrypt.midcrypt(self.mk, message)
         crypted_num = int(crypted_text.encode("hex"), 16)
-        print crypted_num
         after_rsa = pow(crypted_num, self.e, self.n)
         return "n = {}\ne = {}\ncrypted = {}\n".format(self.n, self.e, after_rsa)
             
