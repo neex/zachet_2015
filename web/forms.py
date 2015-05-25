@@ -12,10 +12,8 @@ class RegistrationForm(Form):
     secret = TextField('Your super secret', [validators.Length(max=16)])        
 
 class LoginForm(Form):
-    username = TextField('Username', [validators.Length(min=1, max=25)])
-    password = PasswordField('Password', [
-        validators.Required(),
-    ])
+    username = TextField('Username', [validators.Required()])
+    password = PasswordField('Password', [validators.Required()])
 
     def validate(self):
         rv = Form.validate(self)
@@ -37,7 +35,7 @@ class LoginForm(Form):
 
 class SendForm(Form):
 #    user_to = TextField('To', [validators.Length(min=1, max=25)])
-    user_to = SelectField('To', [validators.Length(min=1, max=25)])
+    user_to = SelectField('To', [validators.Required()])
 
     text = TextField('Text', [validators.Length(min=1)])
     encrypt = BooleanField('Encrypt the message? ')
@@ -59,7 +57,7 @@ class SendForm(Form):
         
     
 class SendSecretForm(Form):
-    user_to = SelectField('To', [validators.Length(min=1, max=25)])
+    user_to = SelectField('To', [validators.Required()])
 
     def validate(self):
         rv = Form.validate(self)
@@ -74,10 +72,13 @@ class SendSecretForm(Form):
         return True
 
 class PasswordRecoveryForm(Form):
-    username = TextField('Username', [validators.Length(min=1, max=25)])
+    username = TextField('Username', [validators.Required()])
 
     def validate(self):
-        rv = Form.validate(self)        
+        rv = Form.validate(self)
+        if not rv:
+            return False
+        
         username = User.query.filter_by(username=self.username.data).first()
         if username is None:
             self.username.errors.append('Unknown username')
@@ -87,12 +88,4 @@ class PasswordRecoveryForm(Form):
 
 
 class PasswordRecoveryAnswerForm(Form):
-    recovery_answer = TextField('Answer', [validators.Length(min=1, max=25)])
-
-    def validate(self):
-        rv = Form.validate(self)
-        if not rv:
-            return False
-
-        return True
-        
+    recovery_answer = TextField('Answer', [validators.Required()])        
