@@ -7,7 +7,7 @@ from login_management import *
 from forms import *
 
 app = Flask(__name__)
-app.debug = True
+app.debug = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://prak:2014prakvmk2014@localhost/prak4?charset=utf8&use_unicode=0'
 db.init_app(app)
 
@@ -33,7 +33,7 @@ def register():
         user = User(form.username.data, form.password.data, form.recovery_question.data, form.recovery_answer.data, form.secret.data)
         db.session.add(user)
         db.session.commit()
-        return redirect(url_for('login') + '?blue_message=Thank+you+for+registring')
+        return redirect(url_for('login') + '?blue_message=Thank+you+for+registration.+You+can+login+now')
     return render_template('register.html', form = form, user = user)
 
 
